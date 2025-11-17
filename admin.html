@@ -1,10 +1,44 @@
-<button onclick="next()">Next</button>
-<div id="cur"></div>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SmartQ - Admin</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 40px; }
+    button { padding: 10px 20px; margin-top: 20px; }
+    .big { font-size: 40px; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<h2>SmartQ — Admin</h2>
+
+<div class="big" id="current">Now Serving: 0</div>
+
+<button onclick="nextToken()">Next</button>
 
 <script>
-async function next(){
-  let r = await fetch("api.php?action=next");
-  let j = await r.json();
-  cur.innerHTML = "Now Serving: " + j.current;
+function nextToken() {
+  let current = Number(localStorage.getItem("currentToken") || 0);
+  let last = Number(localStorage.getItem("lastToken") || 0);
+
+  if (current >= last) {
+    alert("No tokens waiting");
+    return;
+  }
+
+  current += 1;
+  localStorage.setItem("currentToken", current);
+
+  document.getElementById("current").innerHTML = 
+    "Now Serving: " + current;
+}
+
+window.onload = function() {
+  let current = localStorage.getItem("currentToken") || 0;
+  document.getElementById("current").innerHTML = "Now Serving: " + current;
 }
 </script>
+
+</body>
+</html>
