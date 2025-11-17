@@ -1,31 +1,59 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>SmartQ - Take Token</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    button { padding: 10px 20px; margin-top: 20px; }
-    .big { font-size: 40px; font-weight: bold; margin-top: 20px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SmartQ — User</title>
+<style>
+  :root{--bg:#f7f7f9;--card:#fff;--muted:#666;--accent:#1f7ae0}
+  body{font-family:Inter,system-ui,Arial;margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh}
+  .card{background:var(--card);padding:28px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,30,.06);text-align:center;min-width:300px}
+  h1{margin:0 0 14px;font-size:20px}
+  button{background:var(--accent);color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+  .info{margin-top:14px;color:var(--muted)}
+  .token{font-weight:800;font-size:20px;color:#111;margin-top:6px}
+  small{display:block;color:var(--muted);margin-top:8px}
+</style>
 </head>
 <body>
-
-<h2>SmartQ — User</h2>
-
-<button onclick="takeToken()">Take Token</button>
-
-<div id="your"></div>
+  <div class="card">
+    <h1>SmartQ — User</h1>
+    <button id="takeBtn">Take Token</button>
+    <div class="info">
+      <div>Your Token:</div>
+      <div class="token" id="yourToken">—</div>
+      <small id="lastInfo"></small>
+    </div>
+  </div>
 
 <script>
-function takeToken() {
-  let last = localStorage.getItem("lastToken") || 0;
-  let newToken = Number(last) + 1;
-  localStorage.setItem("lastToken", newToken);
+const takeBtn = document.getElementById('takeBtn');
+const yourTokenEl = document.getElementById('yourToken');
+const lastInfo = document.getElementById('lastInfo');
 
-  document.getElementById("your").innerHTML = 
-    "Your Token: <b>" + newToken + "</b>";
+function readLS(k, def){ return JSON.parse(localStorage.getItem(k) || JSON.stringify(def)); }
+
+function renderLast() {
+  const last = readLS('lastToken', 0);
+  const current = readLS('currentToken', 0);
+  lastInfo.textContent = `Last issued: ${last} • Now serving: ${current}`;
 }
-</script>
+function showYour(token){ yourTokenEl.textContent = token; }
 
+takeBtn.onclick = () => {
+  let last = readLS('lastToken', 0);
+  last = Number(last) + 1;
+  localStorage.setItem('lastToken', JSON.stringify(last));
+  showYour(last);
+  renderLast();
+};
+
+// on load show info
+document.addEventListener('DOMContentLoaded', () => {
+  renderLast();
+  const recent = readLS('recentYourToken', null);
+  if(recent) showYour(recent);
+});
+</script>
 </body>
 </html>
