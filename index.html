@@ -1,0 +1,10 @@
+<button onclick="take()">Take Token</button>
+<div id="t"></div>
+
+<script>
+async function take(){
+  let r = await fetch("api.php?action=take");
+  let j = await r.json();
+  t.innerHTML = "Your Token: " + j.token;
+}
+</script>
