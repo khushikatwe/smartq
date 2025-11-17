@@ -1,44 +1,66 @@
-
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>SmartQ - Admin</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    button { padding: 10px 20px; margin-top: 20px; }
-    .big { font-size: 40px; font-weight: bold; margin-top: 20px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SmartQ — Admin</title>
+<style>
+  :root{--bg:#f7f7f9;--card:#fff;--muted:#666;--accent:#1f7ae0}
+  body{font-family:Inter,system-ui,Arial;margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh}
+  .card{background:var(--card);padding:28px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,30,.06);text-align:center;min-width:340px}
+  h1{margin:0 0 14px;font-size:20px}
+  .now{font-size:44px;font-weight:800;margin:10px 0}
+  button{background:var(--accent);color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;margin:6px}
+  .muted{color:var(--muted);margin-top:8px}
+  .ctrls{display:flex;gap:8px;justify-content:center;margin-top:8px}
+</style>
 </head>
 <body>
-
-<h2>SmartQ — Admin</h2>
-
-<div class="big" id="current">Now Serving: 0</div>
-
-<button onclick="nextToken()">Next</button>
+  <div class="card">
+    <h1>SmartQ — Admin</h1>
+    <div class="now" id="nowServing">0</div>
+    <div class="ctrls">
+      <button id="nextBtn">Next</button>
+      <button id="resetBtn" style="background:#e74c3c">Reset</button>
+    </div>
+    <div class="muted" id="summary"></div>
+  </div>
 
 <script>
-function nextToken() {
-  let current = Number(localStorage.getItem("currentToken") || 0);
-  let last = Number(localStorage.getItem("lastToken") || 0);
+const nowEl = document.getElementById('nowServing');
+const summary = document.getElementById('summary');
 
-  if (current >= last) {
-    alert("No tokens waiting");
+function readLS(k, def){ return JSON.parse(localStorage.getItem(k) || JSON.stringify(def)); }
+function writeLS(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+function render() {
+  const current = Number(readLS('currentToken', 0));
+  const last = Number(readLS('lastToken', 0));
+  nowEl.textContent = current;
+  summary.textContent = `Issued: ${last} · Waiting: ${Math.max(0, last - current)}`;
+}
+
+document.getElementById('nextBtn').onclick = () => {
+  let current = Number(readLS('currentToken', 0));
+  const last = Number(readLS('lastToken', 0));
+  if(current >= last){
+    alert('No tokens waiting');
     return;
   }
-
   current += 1;
-  localStorage.setItem("currentToken", current);
+  writeLS('currentToken', current);
+  render();
+};
 
-  document.getElementById("current").innerHTML = 
-    "Now Serving: " + current;
-}
+document.getElementById('resetBtn').onclick = () => {
+  if(!confirm('Reset all tokens?')) return;
+  writeLS('currentToken', 0);
+  writeLS('lastToken', 0);
+  render();
+};
 
-window.onload = function() {
-  let current = localStorage.getItem("currentToken") || 0;
-  document.getElementById("current").innerHTML = "Now Serving: " + current;
-}
+window.addEventListener('storage', render); // sync across tabs if possible
+window.onload = render;
 </script>
-
 </body>
 </html>
