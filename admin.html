@@ -1,0 +1,10 @@
+<button onclick="next()">Next</button>
+<div id="cur"></div>
+
+<script>
+async function next(){
+  let r = await fetch("api.php?action=next");
+  let j = await r.json();
+  cur.innerHTML = "Now Serving: " + j.current;
+}
+</script>
