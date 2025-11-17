@@ -1,66 +1,83 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
 <title>SmartQ — Admin</title>
 <style>
-  :root{--bg:#f7f7f9;--card:#fff;--muted:#666;--accent:#1f7ae0}
-  body{font-family:Inter,system-ui,Arial;margin:0;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh}
-  .card{background:var(--card);padding:28px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,30,.06);text-align:center;min-width:340px}
-  h1{margin:0 0 14px;font-size:20px}
-  .now{font-size:44px;font-weight:800;margin:10px 0}
-  button{background:var(--accent);color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;margin:6px}
-  .muted{color:var(--muted);margin-top:8px}
-  .ctrls{display:flex;gap:8px;justify-content:center;margin-top:8px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui;}
+body{
+  background:linear-gradient(135deg,#c9d6ff,#e2e2e2);
+  height:100vh;display:flex;justify-content:center;align-items:center;
+}
+.card{
+  background:rgba(255,255,255,0.7);
+  padding:40px 50px;
+  border-radius:20px;
+  backdrop-filter:blur(12px);
+  width:380px;text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+  animation:fadeIn 0.8s ease;
+}
+@keyframes fadeIn{0%{opacity:0;transform:translateY(20px);}100%{opacity:1;transform:translateY(0);}}
+h1{font-size:26px;margin-bottom:10px;color:#222;font-weight:700;}
+.now{
+  font-size:60px;font-weight:900;margin:10px;color:#000;
+}
+.button{
+  background:#4CAF50;color:white;
+  padding:12px 20px;border:none;border-radius:10px;
+  cursor:pointer;font-size:16px;font-weight:600;
+  margin:10px;transition:0.25s;
+}
+.button:hover{transform:scale(1.1);}
+
+.reset{
+  background:#e63946;
+}
+.footer{margin-top:10px;color:#444;font-size:14px;}
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>SmartQ — Admin</h1>
-    <div class="now" id="nowServing">0</div>
-    <div class="ctrls">
-      <button id="nextBtn">Next</button>
-      <button id="resetBtn" style="background:#e74c3c">Reset</button>
-    </div>
-    <div class="muted" id="summary"></div>
-  </div>
+
+<div class="card">
+  <h1>Admin Panel</h1>
+  <div class="now" id="nowServing">0</div>
+
+  <button class="button" onclick="nextToken()">Next</button>
+  <button class="button reset" onclick="resetAll()">Reset</button>
+
+  <div class="footer" id="summary"></div>
+</div>
 
 <script>
-const nowEl = document.getElementById('nowServing');
-const summary = document.getElementById('summary');
+function read(k,d){ return JSON.parse(localStorage.getItem(k) || JSON.stringify(d)); }
+function write(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 
-function readLS(k, def){ return JSON.parse(localStorage.getItem(k) || JSON.stringify(def)); }
-function writeLS(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
-
-function render() {
-  const current = Number(readLS('currentToken', 0));
-  const last = Number(readLS('lastToken', 0));
-  nowEl.textContent = current;
-  summary.textContent = `Issued: ${last} · Waiting: ${Math.max(0, last - current)}`;
+function render(){
+  let c = read("currentToken", 0);
+  let l = read("lastToken", 0);
+  document.getElementById("nowServing").innerText = c;
+  document.getElementById("summary").innerText = `Issued: ${l} • Waiting: ${Math.max(0, l-c)}`;
 }
 
-document.getElementById('nextBtn').onclick = () => {
-  let current = Number(readLS('currentToken', 0));
-  const last = Number(readLS('lastToken', 0));
-  if(current >= last){
-    alert('No tokens waiting');
-    return;
-  }
-  current += 1;
-  writeLS('currentToken', current);
+function nextToken(){
+  let c = read("currentToken", 0);
+  let l = read("lastToken", 0);
+  if(c >= l) return alert("No tokens waiting.");
+  c++;
+  write("currentToken", c);
   render();
-};
+}
 
-document.getElementById('resetBtn').onclick = () => {
-  if(!confirm('Reset all tokens?')) return;
-  writeLS('currentToken', 0);
-  writeLS('lastToken', 0);
+function resetAll(){
+  if(!confirm("Reset queue?")) return;
+  write("currentToken", 0);
+  write("lastToken", 0);
   render();
-};
+}
 
-window.addEventListener('storage', render); // sync across tabs if possible
 window.onload = render;
 </script>
+
 </body>
 </html>
